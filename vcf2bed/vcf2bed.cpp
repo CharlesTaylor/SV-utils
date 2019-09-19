@@ -20,7 +20,7 @@ int parse_chr( std::string &str){
 }
 
 enum class vcf_source{
-	dbVar
+	dbVar,LongRanger,
 };
 
 enum class sv_type{
@@ -69,7 +69,29 @@ sv_type alt_to_type(std::string alt_string){
 	return sv_type::OTHER;
 }
 
-int dbVar(int argc, char **argv){
+/*
+sv_type bnd_to_sv(std::string type_string){
+    if( type_string == "INV"){
+        return sv_type::INV;
+    }
+    return sv_type::OTHER;
+}
+
+void LR_handle_BND(const vcf_record &rec){
+    
+    sv_type type bnd_to_sv(rec.info["SVTYPE2"]);
+    if( type == sv_type::INV){
+
+    }
+}
+
+class bnd_manager{
+    std::unordered_map<std::string, break_point> events;
+
+}
+*/
+
+int LongRanger(int argc, char **argv){
 	for(std::string line; std::getline(std::cin,line);){
 		if(line[0] == '#'){ continue; }
 		vcf_record rec(line);
@@ -82,9 +104,77 @@ int dbVar(int argc, char **argv){
 			int svlen = std::stoi(rec.info["SVLEN"]);
 			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.pos+svlen << "\t" << rec.alt  << "\t" << rec.info["SAMPLE"] << "\n";
 		}else if(type == sv_type::INV){
-			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.info["END"] << "\t" << rec.alt << "\t" << rec.info["SAMPLE"] << "\n";
-		}
+			int svlen = std::stoi(rec.info["SVLEN"]);
+			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.pos+svlen << "\t" << rec.alt << "\t" << rec.info["SAMPLE"] << "\n";
+	    }else if(type == sv_type::OTHER){
+            if(rec.info["SVTYPE"]=="BND"){
+//                LR_handle_BND(rec);  
+            }
+        }
 
+	}	
+
+	return 0;
+}
+
+int Sniffles(int argc, char **argv){
+	for(std::string line; std::getline(std::cin,line);){
+		if(line[0] == '#'){ continue; }
+		vcf_record rec(line);
+
+		sv_type type = alt_to_type(rec.alt);
+		if(type == sv_type::DEL){
+			int svlen = std::stoi(rec.info["SVLEN"]);
+			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.pos+svlen << "\t" << rec.alt << "\t" ;
+		}else if(type == sv_type::DUP){
+			int svlen = std::stoi(rec.info["SVLEN"]);
+			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.pos+svlen << "\t" << rec.alt  << "\t";
+		}else if(type == sv_type::INV){
+			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.info["END"] << "\t" << rec.alt << "\t";
+		}
+        else{
+            continue;
+        }       
+        for(auto &pair : rec.info) {
+            std::cout << pair.first;
+            if(pair.second != ""){
+                std::cout << "=" << pair.second;
+                
+            }
+            std::cout << ";";
+        }
+        std::cout <<"\n";
+	}	
+
+	return 0;
+}
+int dbVar(int argc, char **argv){
+	for(std::string line; std::getline(std::cin,line);){
+		if(line[0] == '#'){ continue; }
+		vcf_record rec(line);
+
+		sv_type type = alt_to_type(rec.alt);
+		if(type == sv_type::DEL){
+			int svlen = -std::stoi(rec.info["SVLEN"]);
+			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.pos+svlen << "\t" << rec.alt << "\t" ;
+		}else if(type == sv_type::DUP){
+			int svlen = std::stoi(rec.info["SVLEN"]);
+			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.pos+svlen << "\t" << rec.alt  << "\t";
+		}else if(type == sv_type::INV){
+			std::cout << rec.chrom << "\t" << rec.pos << "\t" << rec.info["END"] << "\t" << rec.alt << "\t";
+		}
+        else{
+            continue;
+        }       
+        for(auto &pair : rec.info) {
+            std::cout << pair.first;
+            if(pair.second != ""){
+                std::cout << "=" << pair.second;
+                
+            }
+            std::cout << ";";
+        }
+        std::cout <<"\n";
 	}	
 
 	return 0;
@@ -92,13 +182,17 @@ int dbVar(int argc, char **argv){
 
 int main(int argc, char **argv){
 	if( argc == 1){
-		std::cerr << "dbVar" << std::endl;
+		std::cerr << "[dbVar, LongRanger, Sniffles]" << std::endl;
 		return -1;
 	}
 	std::string tol(argv[1]);
 	if(tol == "dbVar"){
 		return dbVar(argc-1,argv+1);
-	}
+	}else if (tol == "LongRanger"){
+        return LongRanger(argc-1,argv+1);
+    }else if (tol == "Sniffles"){
+        return Sniffles(argc-1,argv+1);
+    }
 	std::cerr << "dbVar" << std::endl;
 
 	return -1;
