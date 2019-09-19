@@ -183,7 +183,10 @@ public:
 	int agree(bedpel &other){
 		switch( SV){
 		case sv::TRA:
-			if(t != type_complement(other.t)){return 0;}
+			if( src.chr == tgt.chr){return 0;}
+            if(other.src.chr != src.chr){return 0;}
+            if(other.tgt.chr != tgt.chr){return 0;}
+            if(t != type_complement(other.t)){return 0;}
 			if( src.inner_distance(other.src) < 75000){
 				matcc++;
 				other.matcc++;
@@ -213,6 +216,7 @@ public:
 				return 1;
 			}
 		}
+        return 0;
 	}
 };
 
@@ -261,13 +265,13 @@ int grocsvs(int argc, char **argv){
 	for(int i = 0; i < bedpes.size(); i++){
 		for(int j =0; j < bedpes[i].size(); j++){
 			for(auto& ij : bedpes[i][j]){
-				if(ij.matcc !=0){
-					break;
-				}
+				//if(ij.matcc !=0){
+				//	break;
+				//}
 				for(auto& ji : bedpes[i][j]){
-					if(ji.matcc !=0){
-						break;
-					}
+					//if(ji.matcc !=0){
+					//	break;
+					//}
 					if(i == j && &ij == &ji){ continue;}
 					int type;
 				
